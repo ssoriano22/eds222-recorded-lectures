@@ -1,0 +1,73 @@
+---
+title: "EDS 222 Week 1 Wednesday"
+subtitle: "Sampling"
+format: html
+---
+
+We're going to see how to sample from both *empirical* and *parametric* distributions in R. This is the foundation of *simulation*, which is the most important tool in this course.
+
+## Empirical Distributions
+
+```{r}
+library(tidyverse)
+set.seed(222)
+# Set all ggplots to theme_bw()
+theme_set(theme_bw())
+
+# Load soil data (found in /courses/EDS222/data on workbench)
+soil_cores <- read_csv("data/exide-soil-cores.csv")
+```
+
+`sample()` draws samples from a vector (e.g., a column in a data frame)
+
+```{r}
+# Draws 50 random observations from the pb_ppm column
+pb_ppm_sample <- sample(soil_cores$pb_ppm, size = 50)
+
+# Visualize the whole distribution
+ggplot(soil_cores, aes(pb_ppm)) +
+    geom_histogram(binwidth = 20) +
+    xlim(0, 1000)
+
+# Visualize just our sample
+tibble(pb_ppm = pb_ppm_sample) |> 
+    ggplot(aes(pb_ppm)) +
+    geom_histogram(binwidth = 50)
+```
+
+`slice_sample()` draws samples from a data frame instead.
+
+```{r}
+# Takes random samples from data frame, returns df
+soil_sample <- soil_cores |> 
+    slice_sample(n = 50)
+
+ggplot(soil_sample, aes(pb_ppm)) +
+    geom_histogram(binwidth = 50)
+```
+
+## Parametric Distributions
+
+Visualize the PDF with `dnorm()` and other `d___()` functions.
+
+```{r}
+tibble(
+    # Created to have the same mean and sd as empirical data above
+    x = seq(-860, 1370, length.out = 1000),
+    pdf = dnorm(x, mean = 254, sd = 371)
+) |> 
+    ggplot(aes(x,pdf)) +
+    geom_line(linewidth = 1.5)
+```
+
+Draw random samples with `rnorm()`.
+
+```{r}
+normal_sample <- tibble(x = rnorm(25, mean = 254, sd = 371))
+ggplot(normal_sample, aes(x)) +
+    geom_histogram(binwidth = 100)
+```
+
+## Discussion Questions:
+
+1. In the parametric distributions coding demo, I'm unclear about the `x = seq(-860, 1370, length.out = 1000)` part of the tibble creation code. How did you select those min and max values from looking at the earlier empirical example, and why did you specifically use `length.out` instead of `length` to specify the number of values in the sequence?
