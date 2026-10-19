@@ -1,0 +1,89 @@
+---
+title: "EDS 222 Week 4 Tuesday"
+subtitle: "Simulating Data Reviewed"
+date: "19 OCT 2026"
+---
+
+
+```{r}
+library(tidyverse)
+set.seed(222)
+set_theme(theme_bw(16))
+```
+
+## Choose our parameters
+
+```{r}
+beta_0 <-  10 # Intercept
+beta_1 <-  0.1 # Additional typo per increase in typing speed
+beta_2 <- -10 # Difference between typist B and the reference level (A)
+sigma <- 3 # Standard deviation of the residuals
+```
+
+## Generate our predictors
+
+Remember, for Simpson's paradox, there must be a correlation between the predictors.
+
+```{r}
+# Sample size
+N <- 30
+# Typist identities
+typist <- sample(c("A","B"), N, replace = TRUE)
+# Dummy variable for typist B
+typistB <-  ifelse(typist == "B", 1, 0)
+
+# THIS IS THE KEY PART
+typing_speed <- rnorm(N, mean = ifelse(typist == "B", 100, 45), sd = 15)
+```
+
+## Calculate the expected value of the response
+
+```{r}
+expected_typos <-  beta_0 + beta_1 * typing_speed + beta_2 * typistB
+```
+
+## Simulate the response variable
+
+
+```{r}
+typos <- rnorm(n = N,
+            mean = expected_typos,
+            sd = sigma)
+```
+
+## Visualize!
+
+
+```{r}
+simulated_typing <- tibble(typing_speed, typos, typist)
+
+ggplot(simulated_typing, aes(typing_speed, typos, fill = typist)) +
+    # Shape 21 is a hollow circle that can be filled
+    geom_point(size = 2, shape = 21)
+```
+
+## Fit and interpret
+
+If we only look at typing speed:
+
+
+```{r}
+one_predictor_lm <- lm(typos ~ typing_speed, simulated_typing)
+summary(one_predictor_lm)
+```
+
+If we look at both typind speed AND the typist:
+
+
+```{r}
+two_predictor_lm <- lm(typos ~ typing_speed + typist, simulated_typing)
+summary(two_predictor_lm)
+```
+
+For Lab:
+
+categorical (2lv) predictor: high/low pH
+continuous predictor: temp degC
+continous response: # of organisms
+
+organism groups: kelp/algae, invertebrates, fish
