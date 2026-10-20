@@ -1,0 +1,41 @@
+---
+title: "EDS 222 Week 4 Wednesday"
+format: html
+---
+
+## Setup
+
+
+```{r}
+library(tidyverse)
+theme_set(theme_bw(18))
+
+# Load the soil core data and property info
+soil_cores <- read_csv("/courses/EDS222/data/exide-soil-cores.csv") |> 
+    filter(pb_ppm <= 5e3) |> 
+    left_join(
+        read_csv("/courses/EDS222/data/exide-property-covariates.csv"),
+        by = "property_id"
+    ) |> 
+    mutate(home_age = 2026 - year_built) |> 
+    drop_na(pb_ppm, home_age, location_code)
+```
+
+## Visualize the data
+
+Plot home age on the x-axis,, soil lead on the y-axis, and location (DL or YD) in color
+
+```{r}
+ggplot(soil_cores, aes(home_age, pb_ppm, color = location_code)) +
+    geom_point(shape = 21, alpha = 0.5) +
+    labs(x = "Home age (years)", y = "Soil lead (ppm)", color = "Location")
+```
+
+## Fit the model and interpret
+
+The difference in the model formula between additive and interactive models is `*` versus a `+`.
+
+```{r}
+age_location_lm <- lm(pb_ppm ~ home_age * location_code, soil_cores)
+summary(age_location_lm)
+```
